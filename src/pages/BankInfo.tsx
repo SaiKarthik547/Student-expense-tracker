@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tables } from "@/integrations/supabase/types";
 
-interface BankAccount extends Tables<'bank_accounts'> {}
+type BankAccount = Tables<'bank_accounts'>;
 
 export default function BankInfo() {
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -18,11 +18,11 @@ export default function BankInfo() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [formData, setFormData] = useState({
+    account_name: '',
     bank_name: '',
     account_type: 'savings',
     account_number: '',
     balance: '',
-    currency: 'INR',
     is_primary: false
   });
 
@@ -59,11 +59,11 @@ export default function BankInfo() {
 
       const accountData = {
         user_id: user.id,
+        account_name: formData.account_name,
         bank_name: formData.bank_name,
         account_type: formData.account_type,
         account_number: formData.account_number,
         balance: parseFloat(formData.balance) || 0,
-        currency: formData.currency,
         is_primary: formData.is_primary
       };
 
@@ -85,11 +85,11 @@ export default function BankInfo() {
       }
 
       setFormData({
+        account_name: '',
         bank_name: '',
         account_type: 'savings',
         account_number: '',
         balance: '',
-        currency: 'INR',
         is_primary: false
       });
       setEditingAccount(null);
@@ -103,11 +103,11 @@ export default function BankInfo() {
   const handleEdit = (account: BankAccount) => {
     setEditingAccount(account);
     setFormData({
+      account_name: account.account_name,
       bank_name: account.bank_name,
       account_type: account.account_type,
       account_number: account.account_number,
       balance: account.balance.toString(),
-      currency: account.currency,
       is_primary: account.is_primary || false
     });
     setIsModalOpen(true);
@@ -175,11 +175,11 @@ export default function BankInfo() {
                 onClick={() => {
                   setEditingAccount(null);
                   setFormData({
+                    account_name: '',
                     bank_name: '',
                     account_type: 'savings',
                     account_number: '',
                     balance: '',
-                    currency: 'INR',
                     is_primary: false
                   });
                 }}
@@ -197,6 +197,18 @@ export default function BankInfo() {
               </DialogHeader>
 
               <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="account_name">Account Name/Nickname</Label>
+                  <Input
+                    id="account_name"
+                    placeholder="e.g., My Savings Account"
+                    value={formData.account_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, account_name: e.target.value }))}
+                    className="glass-card border-primary/20 focus:border-primary/50"
+                    required
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="bank_name">Bank Name</Label>
                   <select
@@ -257,29 +269,17 @@ export default function BankInfo() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="balance">Current Balance</Label>
-                    <Input
-                      id="balance"
-                      type="number"
-                      placeholder="0.00"
-                      step="0.01"
-                      value={formData.balance}
-                      onChange={(e) => setFormData(prev => ({ ...prev, balance: e.target.value }))}
-                      className="glass-card border-primary/20 focus:border-primary/50"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="currency">Currency</Label>
-                    <input
-                      type="text"
-                      value="INR (₹)"
-                      readOnly
-                      className="w-full px-3 py-2 rounded-lg glass-card border border-primary/20 bg-muted text-muted-foreground"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="balance">Current Balance (₹)</Label>
+                  <Input
+                    id="balance"
+                    type="number"
+                    placeholder="0.00"
+                    step="0.01"
+                    value={formData.balance}
+                    onChange={(e) => setFormData(prev => ({ ...prev, balance: e.target.value }))}
+                    className="glass-card border-primary/20 focus:border-primary/50"
+                  />
                 </div>
 
                 <div className="flex items-center space-x-2">
